@@ -7,6 +7,7 @@
 
 #include <limits>
 #include <stdexcept>
+#include <cmath>
 
 #include "detail.h"
 
@@ -134,8 +135,8 @@ namespace rmq {
     /*
      * RMQ static online - algorithm uses sparse table
      * Memory O(n^2)
-     * Pre-processing O(n^2)
-     * Query O(1)
+     * Pre-processing O(n * log n)
+     * Query O(1) TODO: not quite. look at log2
      */
     template<typename T, rmq_type type = rmq_min>
     class rmq_static_sparse_table_solver : public rmq_abstract<T, type> {
@@ -150,11 +151,35 @@ namespace rmq {
         }
     protected:
         virtual void preprocessing_impl() override {
+            std::size_t size_x = std::log2(base_t::size_) + 1;
+            size_x = std::max(1ul, size_x);
+            pp_sparse_table_ = detail::memory_alloc_2d<value_type>(size_x, base_t::size_);
+            detail::memory_set_2d(pp_sparse_table_, 0, size_x, base_t::size_);
+            for (int i=0; i<base_t::size_; ++i) {
+                pp_sparse_table_[0][i] = base_t::input_[i];
+            }
+            for (int j=1; j<size_x; ++j) {
+                int k = 1 << (j-1);
+                for (int i=0; i<base_t::size_ && k<base_t::size_; ++i, ++k) {
+                    pp_sparse_table_[j][i] = std::min(pp_sparse_table_[j-1][i], pp_sparse_table_[j-1][k]);
+                }
+            }
 
+//            {
+//                for (int i=0; i<size_x; ++i) {
+//                    for (int j=0; j<base_t::size_; ++j) {
+//                        std::cout << (int)pp_sparse_table_[i][j] << "\t| ";
+//                    }
+//                    std::cout << std::endl;
+//                }
+//            }
         }
 
         virtual value_type query_impl(int l, int r) {
-            return pp_sparse_table_[l][r];
+            std::size_t size_ = r-l+1;
+            int log_2 = std::log2(size_);
+            int k = 1 << log_2;
+            return std::min(pp_sparse_table_[log_2][l], pp_sparse_table_[log_2][r-k+1]);
         }
 
         value_type** pp_sparse_table_ = nullptr;
