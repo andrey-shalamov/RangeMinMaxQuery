@@ -5,7 +5,6 @@
 #ifndef RANGEMINMAXQUERY_RMQ_H
 #define RANGEMINMAXQUERY_RMQ_H
 
-#include <chrono>
 #include <limits>
 #include <stdexcept>
 
@@ -30,10 +29,9 @@ namespace rmq {
     template<typename T, rmq_type type = rmq_min>
     class rmq_abstract {
     public:
-        void init(T* a, std::size_t size, bool show_benchmark = true) {
+        void init(T* a, std::size_t size) {
             input_ = a;
             size_ = size;
-            show_benchmark_ = show_benchmark;
         }
         rmq_type getType() const { return type; }
         T* getData() const { return input_; }
@@ -43,14 +41,8 @@ namespace rmq {
          * pre-processing
          */
         void preprocessing() {
-            std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+            detail::timer timer_(name_ + " pre-processing time: ");
             preprocessing_impl();
-            std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-            if (show_benchmark_) {
-                std::cout << name_ << " pre-processing time: ";
-                std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();
-                std::cout << " msec." << std::endl;
-            }
         }
 
         /*
@@ -60,15 +52,8 @@ namespace rmq {
             if (l > r || l < 0 || r < 0 || l >= size_ || r >= size_) {
                 throw std::runtime_error("range isn't correct");
             }
-            std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
-            T o_res = query_impl(l, r);
-            std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-            if (show_benchmark_) {
-                std::cout << name_ << " query time: ";
-                std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count();
-                std::cout << " msec." << std::endl;
-            }
-            return o_res;
+            detail::timer timer_(name_ + " query time: ");
+            return query_impl(l, r);
         }
     protected:
 
@@ -77,7 +62,6 @@ namespace rmq {
 
         T* input_ = nullptr;
         std::size_t size_ = 0;
-        bool show_benchmark_ = true;
         std::string name_;
     };
 

@@ -27,12 +27,12 @@ int main() {
     std::vector<rmq_t*> vecRMQ;
     {
         rmq_t* rmq_ = new rmq::rmq_static_simple_linear_solver<value_type, rmq::rmq_min>();
-        rmq_->init(&A[0], A.size(), true);
+        rmq_->init(&A[0], A.size());
         vecRMQ.push_back(rmq_);
     }
     {
         rmq_t* rmq_ = new rmq::rmq_static_full_table_solver<value_type, rmq::rmq_min>();
-        rmq_->init(&A[0], A.size(), true);
+        rmq_->init(&A[0], A.size());
         vecRMQ.push_back(rmq_);
     }
     for (int i=0; i<vecRMQ.size(); ++i) {

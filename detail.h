@@ -5,7 +5,9 @@
 #ifndef RANGEMINMAXQUERY_DETAIL_H
 #define RANGEMINMAXQUERY_DETAIL_H
 
-#include <cstring> // memset
+#include <cstring>
+#include <ctime>
+#include <iostream>
 
 namespace detail {
 
@@ -71,6 +73,24 @@ namespace detail {
         delete[] p;
         pp = nullptr;
     }
+
+    /*
+     * simple timer by clocks
+     */
+    struct timer {
+        timer(const std::string& name) {
+            name_ = name;
+            start_ = std::clock();
+        }
+        ~timer() {
+            std::cout << "timer " << name_ << " : ";
+            std::clock_t end_ = std::clock();
+            float sec_by_clocks = 1.f * (end_ - start_) / CLOCKS_PER_SEC;
+            std::cout << sec_by_clocks << " sec." << std::endl;
+        }
+        std::string name_;
+        std::clock_t start_;
+    };
 }
 
 #endif //RANGEMINMAXQUERY_DETAIL_H
