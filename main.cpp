@@ -19,8 +19,8 @@ int main() {
         A[i] = std::rand() % 256;
     }
 
-    //------------------- 0,1,2,3,4,5,6,7,8,9 ,10,11,12,13,14,15,16
-    //std::vector<int> A = {8,2,3,5,1,4,7,8,9,13,53,4, 2, 54,76,78,12};
+    //------------------       - 0,1,2,3,4,5,6,7,8,9 ,10,11,12,13,14,15,16
+    //std::vector<value_type> A = {8,2,3,5,1,4,7,8,9,13,53,4, 2, 54,76,78,12};
 
 
     typedef rmq::rmq_abstract<value_type, rmq::rmq_min> rmq_t;
@@ -28,6 +28,7 @@ int main() {
     vecRMQ.push_back(new rmq::rmq_static_simple_linear_solver<value_type, rmq::rmq_min>());
 //    vecRMQ.push_back(new rmq::rmq_static_full_table_solver<value_type, rmq::rmq_min>());
     vecRMQ.push_back(new rmq::rmq_static_sparse_table_solver<value_type, rmq::rmq_min>());
+    vecRMQ.push_back(new rmq::rmq_static_sqrt_decomposition_solver<value_type, rmq::rmq_min>());
 
     for (int i=0; i<vecRMQ.size(); ++i) {
         vecRMQ[i]->init(&A[0], A.size());
@@ -48,21 +49,21 @@ int main() {
         std::cin >> l;
         std::cout << "enter right index:" << std::endl;
         std::cin >> r;
-        if (l >= r) {
+        if (l > r) {
             std::cout << "wrong range" << std::endl;
             continue;
         }
 
-        int res = 0;
+        value_type res = 0;
         for (int i=0; i<vecRMQ.size(); ++i) {
             if (i == 0) {
                 res = vecRMQ[i]->query(l, r);
             } else {
-                int next_res = vecRMQ[i]->query(l,r);
+                value_type next_res = vecRMQ[i]->query(l,r);
                 assert(next_res == res);
             }
         }
-        std::cout << "min [" << l << ", " << r << ") = " << res << std::endl;
+        std::cout << "min [" << l << ", " << r << "] = " << res << std::endl;
     }
     return 0;
 }
